@@ -78,6 +78,47 @@
     <script src="js/users.js"></script>
     <script src="js/roles.js"></script>
     <script>
+        // Инициализация Firebase и загрузка пользователей
+        (function() {
+            // Проверка, продакшен или локально
+            var isProduction = window.location && 
+                              window.location.hostname !== 'localhost' && 
+                              window.location.hostname !== '127.0.0.1';
+            
+            // Инициализация Firebase
+            if (typeof initFirebase !== 'undefined') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (initFirebase()) {
+                        // В продакшене переключить на Firebase режим
+                        if (isProduction && typeof setAPIMode !== 'undefined') {
+                            try {
+                                setAPIMode('firebase');
+                                // Загрузить пользователей из Firebase
+                                if (typeof loadUsersFromFirebase !== 'undefined') {
+                                    setTimeout(function() {
+                                        loadUsersFromFirebase();
+                                    }, 500);
+                                } else if (typeof initUsersStorage !== 'undefined') {
+                                    setTimeout(function() {
+                                        initUsersStorage();
+                                    }, 500);
+                                }
+                            } catch (e) {
+                                if (typeof logError !== 'undefined') {
+                                    logError('Ошибка инициализации Firebase', e);
+                                }
+                            }
+                        } else {
+                            // Локально загрузить пользователей
+                            if (typeof initUsersStorage !== 'undefined') {
+                                initUsersStorage();
+                            }
+                        }
+                    }
+                });
+            }
+        })();
+        
         // Обработка формы входа
         var loginForm = document.getElementById('login-form');
         var loginError = document.getElementById('login-error');
@@ -85,23 +126,51 @@
         loginForm.addEventListener('submit', function(event) {
             event.preventDefault();
 
-            var loginValue = document.getElementById('login-input').value;
+            var loginValue = document.getElementById('login-input').value.trim();
             var password = document.getElementById('password-input').value;
 
             loginError.textContent = '';
             loginError.style.display = 'none';
 
+            // Проверить, что пользователи загружены
+            if (typeof usersStorage !== 'undefined' && usersStorage.users.length === 0) {
+                // Попробовать загрузить пользователей
+                if (typeof initUsersStorage !== 'undefined') {
+                    initUsersStorage();
+                }
+                // Подождать загрузки
+                setTimeout(function() {
+                    tryLogin(loginValue, password);
+                }, 1000);
+            } else {
+                tryLogin(loginValue, password);
+            }
+        });
+        
+        // Функция попытки входа
+        function tryLogin(loginValue, password) {
+            if (typeof login === 'undefined') {
+                loginError.textContent = 'Xatolik: login funksiyasi topilmadi';
+                loginError.style.display = 'block';
+                return;
+            }
+            
             var user = login(loginValue, password);
 
             if (user) {
                 // Получить страницу для роли пользователя
-                var rolePage = getRolePage(user.role);
-                window.location.href = rolePage;
+                if (typeof getRolePage !== 'undefined') {
+                    var rolePage = getRolePage(user.role);
+                    window.location.href = rolePage;
+                } else {
+                    loginError.textContent = 'Xatolik: getRolePage funksiyasi topilmadi';
+                    loginError.style.display = 'block';
+                }
             } else {
                 loginError.textContent = 'Noto\'g\'ri login yoki parol';
                 loginError.style.display = 'block';
             }
-        });
+        }
     </script>
 </body>
 </html>

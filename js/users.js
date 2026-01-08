@@ -34,13 +34,42 @@ function loadUsersFromFirebase() {
     UsersAPI.getAll().then(function(users) {
         if (users && Array.isArray(users) && users.length > 0) {
             usersStorage.users = users;
+        } else {
+            // Если пользователей нет в Firebase, создать демо пользователей для тестирования
+            // В продакшене пользователи должны быть в Firebase Auth
+            // Но для совместимости создадим их в Firestore
+            var isLocalhost = window.location && 
+                             (window.location.hostname === 'localhost' || 
+                              window.location.hostname === '127.0.0.1');
+            if (isLocalhost) {
+                // Только локально создаем демо пользователей
+                createDefaultUsers();
+            } else {
+                // В продакшене создаем демо пользователей в Firebase, если их нет
+                // Это временное решение - в будущем должны быть в Firebase Auth
+                createDefaultUsers();
+                // Сохранить в Firebase
+                for (var i = 0; i < usersStorage.users.length; i++) {
+                    UsersAPI.create(usersStorage.users[i]);
+                }
+            }
         }
-        // В продакшене пользователи должны быть в Firebase Auth, не создаем демо
     }).catch(function(error) {
         if (typeof logError !== 'undefined') {
             logError('Ошибка загрузки пользователей из Firebase', error);
         }
-        // В продакшене не создаем демо пользователей
+        // В продакшене создаем демо пользователей для тестирования
+        var isLocalhost = window.location && 
+                         (window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1');
+        if (!isLocalhost) {
+            // В продакшене создаем демо пользователей
+            createDefaultUsers();
+            // Сохранить в Firebase
+            for (var j = 0; j < usersStorage.users.length; j++) {
+                UsersAPI.create(usersStorage.users[j]);
+            }
+        }
     });
 }
 
@@ -180,6 +209,25 @@ function saveCurrentUser() {
 
 // Вход в систему
 function login(loginValue, password) {
+    // Проверить, есть ли пользователи в хранилище
+    if (usersStorage.users.length === 0) {
+        // Попробовать загрузить из Firebase, если режим firebase
+        if (typeof API_MODE !== 'undefined' && API_MODE === 'firebase') {
+            // Пользователи должны быть загружены заранее через loadUsersFromFirebase
+            // Если не загружены, попробовать загрузить синхронно (не рекомендуется, но для совместимости)
+            if (typeof isFirebaseInitialized !== 'undefined' && isFirebaseInitialized()) {
+                // Попробовать найти пользователя напрямую в Firebase
+                var db = getFirestore();
+                if (db) {
+                    // Это асинхронная операция, но для совместимости попробуем
+                    // В реальности пользователи должны быть в Firebase Auth
+                    // Пока используем старую логику с проверкой в usersStorage
+                }
+            }
+        }
+    }
+    
+    // Поиск пользователя в хранилище
     for (var i = 0; i < usersStorage.users.length; i++) {
         var user = usersStorage.users[i];
         if (user.login === loginValue && user.password === password) {
