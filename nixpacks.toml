@@ -1,0 +1,15 @@
+# Nixpacks configuration for Railway
+# Railway will use this to build and deploy the static site
+
+[phases.setup]
+nixPkgs = ["python3"]
+
+[phases.install]
+cmds = ["echo 'No dependencies to install for static site'"]
+
+[phases.build]
+cmds = ["echo 'No build step needed for static site'"]
+
+[start]
+cmd = "python3 -m http.server $PORT"
+
