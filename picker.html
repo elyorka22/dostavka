@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yig'uvchi panel</title>
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/admin.css">
+    <link rel="stylesheet" href="styles/notifications.css">
+</head>
+<body class="admin-page">
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="admin-header__content">
+            <h1 class="admin-header__title">Yig'uvchi panel</h1>
+            <button class="admin-header__logout" id="logout-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Chiqish
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <!-- Incoming Orders -->
+        <section class="admin-section">
+            <h2 class="admin-section__title">Yig'ilmoqda bo'lgan buyurtmalar</h2>
+            <div class="orders-list" id="picking-orders">
+                <!-- Заказы будут добавлены через JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- API Module -->
+    <script src="js/api.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/roles.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/picker.js"></script>
+    
+    <!-- Initialize Firebase -->
+    <script>
+        if (typeof initFirebase !== 'undefined') {
+            document.addEventListener('DOMContentLoaded', function() {
+                initFirebase();
+            });
+        }
+    </script>
+</body>
+</html>
+

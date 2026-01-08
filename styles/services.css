@@ -1,0 +1,57 @@
+/* Services styles - стили для различных сервисов (для будущего расширения) */
+
+/* Контейнер для всех сервисов */
+.service-container {
+    width: 100%;
+}
+
+/* Базовые стили для контента сервиса */
+.service-content {
+    width: 100%;
+    display: block;
+}
+
+/* Утилиты для переключения между сервисами */
+.service-hidden {
+    display: none !important;
+}
+
+.service-visible {
+    display: block !important;
+}
+
+/* Базовые стили для всех элементов с атрибутом data-service */
+[data-service] {
+    /* Базовые стили применяются через другие селекторы */
+}
+
+/* Стили для сервиса продуктов (текущий) */
+[data-service="products"] {
+    display: block;
+}
+
+/* Стили для будущих сервисов */
+/* 
+[data-service="food"] {
+    Стили для доставки еды
+}
+
+[data-service="pharmacy"] {
+    Стили для аптеки
+}
+
+[data-service="shops"] {
+    Стили для магазинов
+}
+
+[data-service="accessories"] {
+    Стили для аксессуаров
+}
+*/
+
+/* Стили для активного сервиса в bottom navigation */
+.bottom-nav__item[data-service] {
+    /* Базовые стили уже определены в layout.css */
+    cursor: pointer;
+}
+

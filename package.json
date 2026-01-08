@@ -1,0 +1,21 @@
+{
+  "name": "ovoshchi-frukty",
+  "version": "1.0.0",
+  "description": "Mahsulot yetkazib berish xizmati - Toshkent",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "start": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "delivery",
+    "ecommerce",
+    "uzbekistan"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
+

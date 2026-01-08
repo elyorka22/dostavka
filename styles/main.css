@@ -1,0 +1,5 @@
+/* Main stylesheet - импортирует все модули */
+@import url('base.css');
+@import url('layout.css');
+@import url('components.css');
+@import url('services.css');

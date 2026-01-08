@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savat</title>
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/notifications.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header__location">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span class="header__location-text">Toshkent, Namuna ko'chasi</span>
+        </div>
+        <div class="header__actions">
+            <a href="index.html" class="header__back-btn">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="cart-page">
+            <h1 class="cart-page__title">Savat</h1>
+            
+            <!-- Cart Items -->
+            <div class="cart-items" id="cart-items">
+                <!-- Товары будут добавлены через JavaScript -->
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="cart-summary" id="cart-summary">
+                <div class="cart-summary__row">
+                    <span class="cart-summary__label">Jami:</span>
+                    <span class="cart-summary__value" id="cart-total">0 so'm</span>
+                </div>
+                <button class="cart-summary__checkout-btn" id="checkout-btn" disabled>Buyurtma berish</button>
+            </div>
+
+            <!-- Empty Cart Message -->
+            <div class="cart-empty" id="cart-empty" style="display: none;">
+                <svg class="cart-empty__icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <h2 class="cart-empty__title">Savat bo'sh</h2>
+                <p class="cart-empty__text">Savatga mahsulot qo'shing</p>
+                <a href="index.html" class="cart-empty__btn">Mahsulotlarga o'tish</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- API Module -->
+    <script src="js/api.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/users.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/cart-page.js"></script>
+    
+    <!-- Initialize Firebase -->
+    <script>
+        if (typeof initFirebase !== 'undefined') {
+            document.addEventListener('DOMContentLoaded', function() {
+                initFirebase();
+            });
+        }
+    </script>
+</body>
+</html>
+

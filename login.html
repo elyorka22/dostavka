@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tizimga kirish</title>
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/admin.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-card">
+            <h1 class="login-title">Tizimga kirish</h1>
+            <p class="login-subtitle">Login va parolni kiriting</p>
+            
+            <form class="login-form" id="login-form">
+                <div class="form-group">
+                    <label for="login-input" class="form-label">Login</label>
+                    <input 
+                        type="text" 
+                        id="login-input" 
+                        class="form-input" 
+                        placeholder="Loginni kiriting" 
+                        required
+                        autocomplete="username"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password-input" class="form-label">Parol</label>
+                    <input 
+                        type="password" 
+                        id="password-input" 
+                        class="form-input" 
+                        placeholder="Parolni kiriting" 
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <div class="form-error" id="login-error"></div>
+
+                <button type="submit" class="login-btn">Kirish</button>
+            </form>
+
+            <div class="login-info">
+                <p class="login-info__title">Test akkauntlar:</p>
+                <ul class="login-info__list">
+                    <li><strong>admin</strong> / admin123 - Super-admin</li>
+                    <li><strong>manager</strong> / manager123 - Menejer</li>
+                    <li><strong>picker</strong> / picker123 - Yig'uvchi</li>
+                    <li><strong>courier</strong> / courier123 - Kuryer</li>
+                    <li><strong>user</strong> / user123 - Oddiy foydalanuvchi</li>
+                </ul>
+            </div>
+
+            <div class="login-footer">
+                <a href="index.html" class="login-link">← Saytga qaytish</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- API Module -->
+    <script src="js/api.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/users.js"></script>
+    <script src="js/roles.js"></script>
+    <script>
+        // Обработка формы входа
+        var loginForm = document.getElementById('login-form');
+        var loginError = document.getElementById('login-error');
+
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var loginValue = document.getElementById('login-input').value;
+            var password = document.getElementById('password-input').value;
+
+            loginError.textContent = '';
+            loginError.style.display = 'none';
+
+            var user = login(loginValue, password);
+
+            if (user) {
+                // Получить страницу для роли пользователя
+                var rolePage = getRolePage(user.role);
+                window.location.href = rolePage;
+            } else {
+                loginError.textContent = 'Noto\'g\'ri login yoki parol';
+                loginError.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

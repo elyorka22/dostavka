@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mening buyurtmalarim</title>
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/admin.css">
+    <link rel="stylesheet" href="styles/notifications.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header__location">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span class="header__location-text">Toshkent, Namuna ko'chasi</span>
+        </div>
+        <div class="header__actions">
+            <a href="index.html" class="header__back-btn">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="orders-page">
+            <h1 class="orders-page__title">Mening buyurtmalarim</h1>
+            
+            <div class="orders-list" id="user-orders-list">
+                <!-- Заказы будут добавлены через JavaScript -->
+            </div>
+            
+            <div class="orders-empty" id="orders-empty" style="display: none;">
+                <svg class="orders-empty__icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                </svg>
+                <h2 class="orders-empty__title">Hozircha buyurtmalar yo'q</h2>
+                <p class="orders-empty__text">Birinchi buyurtmangizni berish uchun mahsulotlarni tanlang</p>
+                <a href="index.html" class="orders-empty__btn">Mahsulotlarga o'tish</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- API Module -->
+    <script src="js/api.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/users.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/user-orders.js"></script>
+    
+    <!-- Initialize Firebase -->
+    <script>
+        if (typeof initFirebase !== 'undefined') {
+            document.addEventListener('DOMContentLoaded', function() {
+                initFirebase();
+            });
+        }
+    </script>
+</body>
+</html>
+
