@@ -16,6 +16,23 @@ var userRoles = {
     CUSTOMER: 'customer'
 };
 
+// Загрузка пользователей из Firebase
+function loadUsersFromFirebase() {
+    if (typeof UsersAPI === 'undefined' || typeof API_MODE === 'undefined' || API_MODE !== 'firebase') {
+        return;
+    }
+    
+    UsersAPI.getAll().then(function(users) {
+        if (users && Array.isArray(users) && users.length > 0) {
+            usersStorage.users = users;
+        }
+    }).catch(function(error) {
+        if (typeof logError !== 'undefined') {
+            logError('Ошибка загрузки пользователей из Firebase', error);
+        }
+    });
+}
+
 // Инициализация данных пользователей из localStorage
 function initUsersStorage() {
     if (typeof safeLocalStorageGet !== 'undefined') {
@@ -40,9 +57,15 @@ function initUsersStorage() {
         }
     }
 
-    // Создать тестовых пользователей, если их нет
-    if (usersStorage.users.length === 0) {
-        createDefaultUsers();
+    // Загрузить пользователей из Firebase, если режим firebase
+    if (typeof API_MODE !== 'undefined' && API_MODE === 'firebase') {
+        loadUsersFromFirebase();
+    } else if (usersStorage.users.length === 0) {
+        // Только для локальной разработки - создать демо данные
+        // В продакшене пользователи должны быть в Firebase Auth
+        if (window.location && window.location.hostname === 'localhost') {
+            createDefaultUsers();
+        }
     }
 
     // Загрузить текущего пользователя

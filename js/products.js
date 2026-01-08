@@ -17,6 +17,32 @@ var productCategories = {
     bakery: 'Non mahsulotlari'
 };
 
+// Загрузка товаров из Firebase
+function loadProductsFromFirebase() {
+    if (typeof ProductsAPI === 'undefined' || typeof API_MODE === 'undefined' || API_MODE !== 'firebase') {
+        return;
+    }
+    
+    ProductsAPI.getAll().then(function(products) {
+        if (products && Array.isArray(products) && products.length > 0) {
+            productsStorage.products = products;
+            // Найти максимальный ID
+            var maxId = 0;
+            for (var i = 0; i < products.length; i++) {
+                var productId = parseInt(products[i].id);
+                if (!isNaN(productId) && productId > maxId) {
+                    maxId = productId;
+                }
+            }
+            productsStorage.nextId = maxId + 1;
+        }
+    }).catch(function(error) {
+        if (typeof logError !== 'undefined') {
+            logError('Ошибка загрузки товаров из Firebase', error);
+        }
+    });
+}
+
 // Инициализация данных товаров из localStorage
 function initProductsStorage() {
     if (typeof safeLocalStorageGet !== 'undefined') {
@@ -43,9 +69,15 @@ function initProductsStorage() {
         }
     }
 
-    // Создать тестовые товары, если их нет
-    if (productsStorage.products.length === 0) {
-        createDefaultProducts();
+    // Загрузить товары из Firebase, если режим firebase
+    if (typeof API_MODE !== 'undefined' && API_MODE === 'firebase') {
+        loadProductsFromFirebase();
+    } else if (productsStorage.products.length === 0) {
+        // Только для локальной разработки - создать демо данные
+        // В продакшене данные должны быть в Firebase
+        if (window.location && window.location.hostname === 'localhost') {
+            createDefaultProducts();
+        }
     }
 }
 

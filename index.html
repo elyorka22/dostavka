@@ -145,7 +145,21 @@
         // Инициализация Firebase при загрузке страницы
         if (typeof initFirebase !== 'undefined') {
             document.addEventListener('DOMContentLoaded', function() {
-                initFirebase();
+                // Инициализировать Firebase
+                if (initFirebase()) {
+                    // Переключить на Firebase режим, если не локально
+                    if (window.location && window.location.hostname !== 'localhost') {
+                        if (typeof setAPIMode !== 'undefined') {
+                            try {
+                                setAPIMode('firebase');
+                            } catch (e) {
+                                if (typeof logError !== 'undefined') {
+                                    logError('Ошибка переключения на Firebase режим', e);
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
     </script>

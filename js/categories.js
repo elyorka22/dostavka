@@ -44,6 +44,39 @@ var categoriesStorage = {
     }
 };
 
+// Загрузка категорий из Firebase
+function loadCategoriesFromFirebase() {
+    if (typeof API_MODE === 'undefined' || API_MODE !== 'firebase') {
+        return;
+    }
+    
+    if (typeof ProductsAPI === 'undefined') {
+        return;
+    }
+    
+    // Загрузить категории через API (если есть коллекция categories)
+    var db = null;
+    if (typeof getFirestore !== 'undefined' && isFirebaseInitialized()) {
+        db = getFirestore();
+        if (db) {
+            db.collection('categories').get().then(function(querySnapshot) {
+                if (querySnapshot && !querySnapshot.empty) {
+                    var loadedCategories = {};
+                    querySnapshot.forEach(function(doc) {
+                        var categoryData = doc.data();
+                        loadedCategories[doc.id] = categoryData;
+                    });
+                    categoriesStorage.categories = loadedCategories;
+                }
+            }).catch(function(error) {
+                if (typeof logError !== 'undefined') {
+                    logError('Ошибка загрузки категорий из Firebase', error);
+                }
+            });
+        }
+    }
+}
+
 // Инициализация данных категорий из localStorage
 function initCategoriesStorage() {
     var savedCategories = localStorage.getItem('categories');
@@ -58,10 +91,16 @@ function initCategoriesStorage() {
         }
     }
 
-    // Если категорий нет, создать по умолчанию
-    if (Object.keys(categoriesStorage.categories).length === 0) {
-        categoriesStorage.categories = JSON.parse(JSON.stringify(categoriesStorage.defaultCategories));
-        saveCategories();
+    // Загрузить категории из Firebase, если режим firebase
+    if (typeof API_MODE !== 'undefined' && API_MODE === 'firebase') {
+        loadCategoriesFromFirebase();
+    } else if (Object.keys(categoriesStorage.categories).length === 0) {
+        // Только для локальной разработки - создать дефолтные категории
+        // В продакшене категории должны быть в Firebase
+        if (window.location && window.location.hostname === 'localhost') {
+            categoriesStorage.categories = JSON.parse(JSON.stringify(categoriesStorage.defaultCategories));
+            saveCategories();
+        }
     }
 }
 
