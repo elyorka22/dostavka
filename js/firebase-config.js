@@ -21,14 +21,15 @@ function getFirebaseConfig() {
         return window.__FIREBASE_CONFIG__;
     }
     
-    // Значения по умолчанию (замените на свои)
+    // Значения по умолчанию (ваша конфигурация Firebase)
     return {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID"
+        apiKey: "AIzaSyCMNb94WW1t40pnJiWdUK-SlIlxi0XWQLs",
+        authDomain: "dostavka-27346.firebaseapp.com",
+        projectId: "dostavka-27346",
+        storageBucket: "dostavka-27346.firebasestorage.app",
+        messagingSenderId: "456392340550",
+        appId: "1:456392340550:web:64fc33525552435d6f4647",
+        measurementId: "G-Q71DVH12M7"
     };
 }
 
