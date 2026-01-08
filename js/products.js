@@ -23,6 +23,15 @@ function loadProductsFromFirebase() {
         return;
     }
     
+    // Проверить, что Firebase инициализирован
+    if (typeof isFirebaseInitialized === 'undefined' || !isFirebaseInitialized()) {
+        // Подождать инициализации Firebase
+        setTimeout(function() {
+            loadProductsFromFirebase();
+        }, 500);
+        return;
+    }
+    
     ProductsAPI.getAll().then(function(products) {
         if (products && Array.isArray(products) && products.length > 0) {
             productsStorage.products = products;
@@ -32,13 +41,36 @@ function loadProductsFromFirebase() {
                 var productId = parseInt(products[i].id);
                 if (!isNaN(productId) && productId > maxId) {
                     maxId = productId;
+                } else if (typeof products[i].id === 'string' && products[i].id.length > 0) {
+                    // Если ID строка (Firebase auto-id), используем длину массива
+                    maxId = products.length;
                 }
             }
             productsStorage.nextId = maxId + 1;
+            
+            // Обновить отображение товаров
+            if (typeof displayProductsOnMain !== 'undefined') {
+                displayProductsOnMain();
+            }
+        } else {
+            // Если товаров нет в Firebase, не создаем демо данные в продакшене
+            var isLocalhost = window.location && 
+                             (window.location.hostname === 'localhost' || 
+                              window.location.hostname === '127.0.0.1');
+            if (isLocalhost && productsStorage.products.length === 0) {
+                createDefaultProducts();
+            }
         }
     }).catch(function(error) {
         if (typeof logError !== 'undefined') {
             logError('Ошибка загрузки товаров из Firebase', error);
+        }
+        // В продакшене не создаем демо данные при ошибке
+        var isLocalhost = window.location && 
+                         (window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1');
+        if (isLocalhost && productsStorage.products.length === 0) {
+            createDefaultProducts();
         }
     });
 }
@@ -71,13 +103,18 @@ function initProductsStorage() {
 
     // Загрузить товары из Firebase, если режим firebase
     if (typeof API_MODE !== 'undefined' && API_MODE === 'firebase') {
+        // Загрузить из Firebase асинхронно
         loadProductsFromFirebase();
     } else if (productsStorage.products.length === 0) {
         // Только для локальной разработки - создать демо данные
         // В продакшене данные должны быть в Firebase
-        if (window.location && window.location.hostname === 'localhost') {
+        var isLocalhost = window.location && 
+                         (window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1');
+        if (isLocalhost) {
             createDefaultProducts();
         }
+        // В продакшене не создаем демо данные - данные должны быть в Firebase
     }
 }
 

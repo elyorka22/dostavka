@@ -6,7 +6,22 @@
 var API_BASE_URL = 'http://localhost:3000/api'; // Замените на реальный URL
 
 // Режим работы: 'localStorage', 'firebase' или 'api'
+// Проверяем переменную окружения или используем localStorage по умолчанию
 var API_MODE = 'localStorage';
+
+// Проверка переменной окружения (для Vercel)
+if (typeof window !== 'undefined' && window.location) {
+    // Если не localhost, проверяем переменную окружения
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        // В браузере переменные окружения доступны через window.__ENV__ или через проверку
+        // Vercel инжектит переменные в runtime, но для статического сайта нужно проверять по-другому
+        // Проверим через проверку hostname - если не localhost, значит продакшен
+        // В продакшене всегда используем firebase, если он инициализирован
+        if (typeof initFirebase !== 'undefined') {
+            // Будет переключено после инициализации Firebase
+        }
+    }
+}
 
 // Функция для выполнения HTTP запросов
 function apiRequest(method, endpoint, data) {

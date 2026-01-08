@@ -143,15 +143,47 @@
     <!-- Initialize Firebase -->
     <script>
         // Инициализация Firebase при загрузке страницы
-        if (typeof initFirebase !== 'undefined') {
-            document.addEventListener('DOMContentLoaded', function() {
-                // Инициализировать Firebase
-                if (initFirebase()) {
-                    // Переключить на Firebase режим, если не локально
-                    if (window.location && window.location.hostname !== 'localhost') {
-                        if (typeof setAPIMode !== 'undefined') {
+        (function() {
+            // Проверка, что мы не на localhost (продакшен)
+            var isProduction = window.location && 
+                              window.location.hostname !== 'localhost' && 
+                              window.location.hostname !== '127.0.0.1';
+            
+            // Если продакшен, сразу переключаем на firebase режим
+            if (isProduction && typeof setAPIMode !== 'undefined') {
+                // Установить режим firebase до инициализации
+                try {
+                    API_MODE = 'firebase';
+                } catch (e) {
+                    // Игнорировать, если API_MODE еще не определен
+                }
+            }
+            
+            // Инициализация Firebase
+            if (typeof initFirebase !== 'undefined') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Инициализировать Firebase
+                    if (initFirebase()) {
+                        // Переключить на Firebase режим, если продакшен
+                        if (isProduction && typeof setAPIMode !== 'undefined') {
                             try {
                                 setAPIMode('firebase');
+                                // Перезагрузить данные из Firebase
+                                if (typeof initProductsStorage !== 'undefined') {
+                                    setTimeout(function() {
+                                        initProductsStorage();
+                                    }, 500);
+                                }
+                                if (typeof initUsersStorage !== 'undefined') {
+                                    setTimeout(function() {
+                                        initUsersStorage();
+                                    }, 500);
+                                }
+                                if (typeof initCategoriesStorage !== 'undefined') {
+                                    setTimeout(function() {
+                                        initCategoriesStorage();
+                                    }, 500);
+                                }
                             } catch (e) {
                                 if (typeof logError !== 'undefined') {
                                     logError('Ошибка переключения на Firebase режим', e);
@@ -159,9 +191,9 @@
                             }
                         }
                     }
-                }
-            });
-        }
+                });
+            }
+        })();
     </script>
 </body>
 </html>

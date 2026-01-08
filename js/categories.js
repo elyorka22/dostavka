@@ -50,13 +50,18 @@ function loadCategoriesFromFirebase() {
         return;
     }
     
-    if (typeof ProductsAPI === 'undefined') {
+    // Проверить, что Firebase инициализирован
+    if (typeof isFirebaseInitialized === 'undefined' || !isFirebaseInitialized()) {
+        // Подождать инициализации Firebase
+        setTimeout(function() {
+            loadCategoriesFromFirebase();
+        }, 500);
         return;
     }
     
-    // Загрузить категории через API (если есть коллекция categories)
+    // Загрузить категории через Firestore
     var db = null;
-    if (typeof getFirestore !== 'undefined' && isFirebaseInitialized()) {
+    if (typeof getFirestore !== 'undefined') {
         db = getFirestore();
         if (db) {
             db.collection('categories').get().then(function(querySnapshot) {
@@ -64,13 +69,36 @@ function loadCategoriesFromFirebase() {
                     var loadedCategories = {};
                     querySnapshot.forEach(function(doc) {
                         var categoryData = doc.data();
+                        categoryData.id = doc.id;
                         loadedCategories[doc.id] = categoryData;
                     });
                     categoriesStorage.categories = loadedCategories;
+                    
+                    // Обновить отображение категорий
+                    if (typeof displayCategoriesOnMain !== 'undefined') {
+                        displayCategoriesOnMain();
+                    }
+                } else {
+                    // Если категорий нет в Firebase, не создаем дефолтные в продакшене
+                    var isLocalhost = window.location && 
+                                     (window.location.hostname === 'localhost' || 
+                                      window.location.hostname === '127.0.0.1');
+                    if (isLocalhost && Object.keys(categoriesStorage.categories).length === 0) {
+                        categoriesStorage.categories = JSON.parse(JSON.stringify(categoriesStorage.defaultCategories));
+                        saveCategories();
+                    }
                 }
             }).catch(function(error) {
                 if (typeof logError !== 'undefined') {
                     logError('Ошибка загрузки категорий из Firebase', error);
+                }
+                // В продакшене не создаем дефолтные категории при ошибке
+                var isLocalhost = window.location && 
+                                 (window.location.hostname === 'localhost' || 
+                                  window.location.hostname === '127.0.0.1');
+                if (isLocalhost && Object.keys(categoriesStorage.categories).length === 0) {
+                    categoriesStorage.categories = JSON.parse(JSON.stringify(categoriesStorage.defaultCategories));
+                    saveCategories();
                 }
             });
         }
@@ -93,14 +121,19 @@ function initCategoriesStorage() {
 
     // Загрузить категории из Firebase, если режим firebase
     if (typeof API_MODE !== 'undefined' && API_MODE === 'firebase') {
+        // Загрузить из Firebase асинхронно
         loadCategoriesFromFirebase();
     } else if (Object.keys(categoriesStorage.categories).length === 0) {
         // Только для локальной разработки - создать дефолтные категории
         // В продакшене категории должны быть в Firebase
-        if (window.location && window.location.hostname === 'localhost') {
+        var isLocalhost = window.location && 
+                         (window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1');
+        if (isLocalhost) {
             categoriesStorage.categories = JSON.parse(JSON.stringify(categoriesStorage.defaultCategories));
             saveCategories();
         }
+        // В продакшене не создаем дефолтные категории
     }
 }
 
