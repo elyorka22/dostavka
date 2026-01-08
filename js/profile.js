@@ -77,15 +77,36 @@ function initProfile() {
         }
     }
 
-    // Открытие/закрытие меню профиля
-    profileBtn.addEventListener('click', function(event) {
-        event.stopPropagation();
+    // Функция обработки клика на кнопку профиля
+    function handleProfileClick(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
+        // Проверить текущего пользователя при каждом клике
+        var currentUserNow = null;
+        if (typeof getCurrentUser !== 'undefined') {
+            currentUserNow = getCurrentUser();
+        }
+        
+        // Если пользователь не авторизован, перейти на страницу входа
+        if (!currentUserNow) {
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // Если пользователь авторизован, открыть/закрыть меню
         if (profileMenu.classList.contains('profile-menu--open')) {
             profileMenu.classList.remove('profile-menu--open');
         } else {
             profileMenu.classList.add('profile-menu--open');
         }
-    });
+    }
+    
+    // Добавить обработчик клика (используем и addEventListener и onclick для надежности)
+    profileBtn.addEventListener('click', handleProfileClick);
+    profileBtn.onclick = handleProfileClick;
 
     // Закрытие меню при клике вне его
     document.addEventListener('click', function(event) {
@@ -102,12 +123,28 @@ function initProfile() {
             window.location.reload();
         });
     }
+    
+    // Обработка ссылки входа (на случай, если меню открыто)
+    if (loginLink) {
+        loginLink.addEventListener('click', function(event) {
+            // Убедиться, что переход произойдет
+            // (обычно href уже работает, но на всякий случай)
+        });
+    }
 }
 
 // Запуск при загрузке
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initProfile);
-} else {
-    initProfile();
+function startProfile() {
+    // Убедиться, что DOM загружен
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(initProfile, 100);
+        });
+    } else {
+        // DOM уже загружен, но подождем немного для надежности
+        setTimeout(initProfile, 100);
+    }
 }
+
+startProfile();
 
