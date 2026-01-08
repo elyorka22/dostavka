@@ -3,12 +3,6 @@
   "buildCommand": "",
   "outputDirectory": ".",
   "framework": "other",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
