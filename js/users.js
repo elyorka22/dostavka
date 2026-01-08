@@ -35,40 +35,27 @@ function loadUsersFromFirebase() {
         if (users && Array.isArray(users) && users.length > 0) {
             usersStorage.users = users;
         } else {
-            // Если пользователей нет в Firebase, создать демо пользователей для тестирования
-            // В продакшене пользователи должны быть в Firebase Auth
-            // Но для совместимости создадим их в Firestore
-            var isLocalhost = window.location && 
-                             (window.location.hostname === 'localhost' || 
-                              window.location.hostname === '127.0.0.1');
-            if (isLocalhost) {
-                // Только локально создаем демо пользователей
-                createDefaultUsers();
-            } else {
-                // В продакшене создаем демо пользователей в Firebase, если их нет
-                // Это временное решение - в будущем должны быть в Firebase Auth
-                createDefaultUsers();
-                // Сохранить в Firebase
-                for (var i = 0; i < usersStorage.users.length; i++) {
-                    UsersAPI.create(usersStorage.users[i]);
-                }
+            // Если пользователей нет в Firebase, создать демо пользователей
+            // Это нужно для работы системы до настройки Firebase Auth
+            createDefaultUsers();
+            // Сохранить в Firebase
+            for (var i = 0; i < usersStorage.users.length; i++) {
+                UsersAPI.create(usersStorage.users[i]).catch(function(err) {
+                    // Игнорировать ошибки, если пользователь уже существует
+                });
             }
         }
     }).catch(function(error) {
         if (typeof logError !== 'undefined') {
             logError('Ошибка загрузки пользователей из Firebase', error);
         }
-        // В продакшене создаем демо пользователей для тестирования
-        var isLocalhost = window.location && 
-                         (window.location.hostname === 'localhost' || 
-                          window.location.hostname === '127.0.0.1');
-        if (!isLocalhost) {
-            // В продакшене создаем демо пользователей
-            createDefaultUsers();
-            // Сохранить в Firebase
-            for (var j = 0; j < usersStorage.users.length; j++) {
-                UsersAPI.create(usersStorage.users[j]);
-            }
+        // При ошибке создаем демо пользователей для работы системы
+        createDefaultUsers();
+        // Попробовать сохранить в Firebase
+        for (var j = 0; j < usersStorage.users.length; j++) {
+            UsersAPI.create(usersStorage.users[j]).catch(function(err) {
+                // Игнорировать ошибки
+            });
         }
     });
 }
