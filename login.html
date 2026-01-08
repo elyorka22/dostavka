@@ -122,36 +122,50 @@
         // Обработка формы входа
         var loginForm = document.getElementById('login-form');
         var loginError = document.getElementById('login-error');
+        var loginBtn = loginForm.querySelector('.login-btn');
+        var originalBtnText = loginBtn.textContent;
 
-        loginForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            var loginValue = document.getElementById('login-input').value.trim();
-            var password = document.getElementById('password-input').value;
-
-            loginError.textContent = '';
-            loginError.style.display = 'none';
-
-            // Проверить, что пользователи загружены
-            if (typeof usersStorage !== 'undefined' && usersStorage.users.length === 0) {
-                // Попробовать загрузить пользователей
-                if (typeof initUsersStorage !== 'undefined') {
-                    initUsersStorage();
+        // Функция ожидания загрузки пользователей
+        function waitForUsers(callback, maxAttempts) {
+            maxAttempts = maxAttempts || 20; // Максимум 20 попыток (10 секунд)
+            var attempts = 0;
+            
+            function checkUsers() {
+                attempts++;
+                
+                // Проверить, загружены ли пользователи
+                if (typeof usersStorage !== 'undefined' && usersStorage.users.length > 0) {
+                    callback(true);
+                    return;
                 }
-                // Подождать загрузки
-                setTimeout(function() {
-                    tryLogin(loginValue, password);
-                }, 1000);
-            } else {
-                tryLogin(loginValue, password);
+                
+                // Если не загружены и есть попытки
+                if (attempts < maxAttempts) {
+                    // Попробовать загрузить пользователей
+                    if (typeof loadUsersFromFirebase !== 'undefined' && typeof API_MODE !== 'undefined' && API_MODE === 'firebase') {
+                        loadUsersFromFirebase();
+                    } else if (typeof initUsersStorage !== 'undefined') {
+                        initUsersStorage();
+                    }
+                    
+                    // Подождать и проверить снова
+                    setTimeout(checkUsers, 500);
+                } else {
+                    // Превышено количество попыток
+                    callback(false);
+                }
             }
-        });
+            
+            checkUsers();
+        }
         
         // Функция попытки входа
         function tryLogin(loginValue, password) {
             if (typeof login === 'undefined') {
                 loginError.textContent = 'Xatolik: login funksiyasi topilmadi';
                 loginError.style.display = 'block';
+                loginBtn.disabled = false;
+                loginBtn.textContent = originalBtnText;
                 return;
             }
             
@@ -165,12 +179,55 @@
                 } else {
                     loginError.textContent = 'Xatolik: getRolePage funksiyasi topilmadi';
                     loginError.style.display = 'block';
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = originalBtnText;
                 }
             } else {
                 loginError.textContent = 'Noto\'g\'ri login yoki parol';
                 loginError.style.display = 'block';
+                loginBtn.disabled = false;
+                loginBtn.textContent = originalBtnText;
             }
         }
+
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var loginValue = document.getElementById('login-input').value.trim();
+            var password = document.getElementById('password-input').value;
+
+            // Валидация
+            if (!loginValue || !password) {
+                loginError.textContent = 'Iltimos, login va parolni kiriting';
+                loginError.style.display = 'block';
+                return;
+            }
+
+            loginError.textContent = '';
+            loginError.style.display = 'none';
+            
+            // Показать индикатор загрузки
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Yuklanmoqda...';
+
+            // Проверить, загружены ли пользователи
+            if (typeof usersStorage !== 'undefined' && usersStorage.users.length > 0) {
+                // Пользователи уже загружены, можно входить
+                tryLogin(loginValue, password);
+            } else {
+                // Ждать загрузки пользователей
+                waitForUsers(function(success) {
+                    if (success) {
+                        tryLogin(loginValue, password);
+                    } else {
+                        loginError.textContent = 'Xatolik: foydalanuvchilar yuklanmadi. Iltimos, sahifani yangilang.';
+                        loginError.style.display = 'block';
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = originalBtnText;
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
