@@ -11,5 +11,8 @@ cmds = ["echo 'No dependencies to install for static site'"]
 cmds = ["echo 'No build step needed for static site'"]
 
 [start]
-cmd = "python3 -m http.server $PORT"
+# Запуск Python сервера из корневой директории проекта
+# $PORT - автоматически устанавливается Railway
+# --directory . - указывает на текущую директорию (root проекта)
+cmd = "python3 -m http.server $PORT --directory ."
 
