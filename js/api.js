@@ -11,15 +11,17 @@ var API_MODE = 'localStorage';
 
 // Проверка переменной окружения (для Vercel)
 if (typeof window !== 'undefined' && window.location) {
-    // Если не localhost, проверяем переменную окружения
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        // В браузере переменные окружения доступны через window.__ENV__ или через проверку
-        // Vercel инжектит переменные в runtime, но для статического сайта нужно проверять по-другому
-        // Проверим через проверку hostname - если не localhost, значит продакшен
-        // В продакшене всегда используем firebase, если он инициализирован
-        if (typeof initFirebase !== 'undefined') {
-            // Будет переключено после инициализации Firebase
-        }
+    // Если не localhost, значит продакшен - используем firebase
+    if (window.location.hostname !== 'localhost' && 
+        window.location.hostname !== '127.0.0.1' &&
+        !window.location.hostname.includes('localhost')) {
+        // В продакшене всегда используем firebase
+        API_MODE = 'firebase';
+    }
+    
+    // Проверка флага принудительного режима
+    if (window.__FORCE_FIREBASE_MODE__) {
+        API_MODE = 'firebase';
     }
 }
 

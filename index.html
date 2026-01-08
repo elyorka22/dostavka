@@ -150,12 +150,10 @@
                               window.location.hostname !== '127.0.0.1';
             
             // Если продакшен, сразу переключаем на firebase режим
-            if (isProduction && typeof setAPIMode !== 'undefined') {
-                // Установить режим firebase до инициализации
-                try {
-                    API_MODE = 'firebase';
-                } catch (e) {
-                    // Игнорировать, если API_MODE еще не определен
+            if (isProduction) {
+                // Установить режим firebase ДО загрузки других скриптов
+                if (typeof window !== 'undefined') {
+                    window.__FORCE_FIREBASE_MODE__ = true;
                 }
             }
             
@@ -168,22 +166,37 @@
                         if (isProduction && typeof setAPIMode !== 'undefined') {
                             try {
                                 setAPIMode('firebase');
+                                
+                                // Очистить localStorage данные в продакшене
+                                try {
+                                    localStorage.removeItem('products');
+                                    localStorage.removeItem('categories');
+                                } catch(e) {
+                                    // Игнорировать ошибки
+                                }
+                                
                                 // Перезагрузить данные из Firebase
-                                if (typeof initProductsStorage !== 'undefined') {
-                                    setTimeout(function() {
+                                setTimeout(function() {
+                                    if (typeof initProductsStorage !== 'undefined') {
                                         initProductsStorage();
-                                    }, 500);
-                                }
-                                if (typeof initUsersStorage !== 'undefined') {
-                                    setTimeout(function() {
+                                    }
+                                    if (typeof initUsersStorage !== 'undefined') {
                                         initUsersStorage();
-                                    }, 500);
-                                }
-                                if (typeof initCategoriesStorage !== 'undefined') {
-                                    setTimeout(function() {
+                                    }
+                                    if (typeof initCategoriesStorage !== 'undefined') {
                                         initCategoriesStorage();
-                                    }, 500);
-                                }
+                                    }
+                                    
+                                    // Обновить отображение после загрузки
+                                    setTimeout(function() {
+                                        if (typeof displayProductsOnMain !== 'undefined') {
+                                            displayProductsOnMain();
+                                        }
+                                        if (typeof displayCategoriesOnMain !== 'undefined') {
+                                            displayCategoriesOnMain();
+                                        }
+                                    }, 1000);
+                                }, 500);
                             } catch (e) {
                                 if (typeof logError !== 'undefined') {
                                     logError('Ошибка переключения на Firebase режим', e);

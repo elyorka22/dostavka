@@ -146,17 +146,24 @@ function displayProductsOnMain() {
         products = productsStorage.products;
     }
 
-    // Если товаров нет, создать демо товары напрямую
+    // Если товаров нет, создать демо товары ТОЛЬКО на localhost
     if (products.length === 0) {
-        products = createDemoProducts();
-        // Сохранить в localStorage, если возможно
-        try {
-            localStorage.setItem('products', JSON.stringify({
-                products: products,
-                nextId: products.length + 1
-            }));
-        } catch(e) {
-            // Игнорировать ошибки сохранения
+        var isLocalhost = window.location && 
+                         (window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1');
+        
+        // В продакшене не создаем демо данные - должны быть в Firebase
+        if (isLocalhost) {
+            products = createDemoProducts();
+            // Сохранить в localStorage, если возможно
+            try {
+                localStorage.setItem('products', JSON.stringify({
+                    products: products,
+                    nextId: products.length + 1
+                }));
+            } catch(e) {
+                // Игнорировать ошибки сохранения
+            }
         }
     }
 
