@@ -86,14 +86,18 @@ function initProfile() {
         
         // Проверить текущего пользователя при каждом клике
         var currentUserNow = null;
-        if (typeof getCurrentUser !== 'undefined') {
-            currentUserNow = getCurrentUser();
+        try {
+            if (typeof getCurrentUser !== 'undefined' && getCurrentUser) {
+                currentUserNow = getCurrentUser();
+            }
+        } catch (e) {
+            console.error('Ошибка при получении текущего пользователя:', e);
         }
         
         // Если пользователь не авторизован, перейти на страницу входа
         if (!currentUserNow) {
             window.location.href = 'login.html';
-            return;
+            return false;
         }
         
         // Если пользователь авторизован, открыть/закрыть меню
@@ -102,11 +106,14 @@ function initProfile() {
         } else {
             profileMenu.classList.add('profile-menu--open');
         }
+        return false;
     }
     
-    // Добавить обработчик клика (используем и addEventListener и onclick для надежности)
-    profileBtn.addEventListener('click', handleProfileClick);
-    profileBtn.onclick = handleProfileClick;
+    // Обработчик уже добавлен через inline onclick в HTML
+    // Дополнительно добавим через addEventListener для совместимости
+    if (profileBtn) {
+        profileBtn.addEventListener('click', handleProfileClick, true);
+    }
 
     // Закрытие меню при клике вне его
     document.addEventListener('click', function(event) {
@@ -132,6 +139,39 @@ function initProfile() {
         });
     }
 }
+
+// Сделать handleProfileClick глобальной для inline обработчиков
+window.handleProfileClick = function(event) {
+    var profileBtn = document.getElementById('profile-btn');
+    if (!profileBtn) {
+        window.location.href = 'login.html';
+        return false;
+    }
+    
+    var currentUserNow = null;
+    try {
+        if (typeof getCurrentUser !== 'undefined' && getCurrentUser) {
+            currentUserNow = getCurrentUser();
+        }
+    } catch (e) {
+        console.error('Ошибка при получении текущего пользователя:', e);
+    }
+    
+    if (!currentUserNow) {
+        window.location.href = 'login.html';
+        return false;
+    }
+    
+    var profileMenu = document.getElementById('profile-menu');
+    if (profileMenu) {
+        if (profileMenu.classList.contains('profile-menu--open')) {
+            profileMenu.classList.remove('profile-menu--open');
+        } else {
+            profileMenu.classList.add('profile-menu--open');
+        }
+    }
+    return false;
+};
 
 // Запуск при загрузке
 function startProfile() {
