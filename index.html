@@ -140,6 +140,31 @@
     <script src="js/main-categories.js"></script>
     <script src="js/main-cart.js"></script>
     
+    <!-- Initialize API Configuration -->
+    <script>
+        // Установка переменных для Railway API
+        // Эти переменные будут использоваться в js/api.js
+        (function() {
+            var isProduction = window.location && 
+                              window.location.hostname !== 'localhost' && 
+                              window.location.hostname !== '127.0.0.1';
+            
+            if (isProduction) {
+                // В продакшене используем Railway API
+                // Установите ваш Railway URL в переменных окружения Vercel
+                // Vercel автоматически инжектирует переменные через этот скрипт
+                // Для этого нужно создать vercel.json или использовать build-time инжекцию
+                
+                // По умолчанию используем api режим (Railway)
+                window.API_MODE = 'api';
+                
+                // Railway URL будет установлен через переменные окружения
+                // Если нужно использовать Firebase, установите:
+                // window.API_MODE = 'firebase';
+            }
+        })();
+    </script>
+    
     <!-- Initialize Firebase -->
     <script>
         // Инициализация Firebase при загрузке страницы
@@ -149,8 +174,8 @@
                               window.location.hostname !== 'localhost' && 
                               window.location.hostname !== '127.0.0.1';
             
-            // Если продакшен, сразу переключаем на firebase режим
-            if (isProduction) {
+            // Если продакшен и используется Firebase режим
+            if (isProduction && window.API_MODE === 'firebase') {
                 // Установить режим firebase ДО загрузки других скриптов
                 if (typeof window !== 'undefined') {
                     window.__FORCE_FIREBASE_MODE__ = true;

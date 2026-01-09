@@ -157,6 +157,24 @@
     <script src="js/api.js"></script>
     
     <!-- Application Scripts -->
+    <!-- API Configuration -->
+    <script>
+        // Установка переменных для Railway API
+        (function() {
+            var isProduction = window.location && 
+                              window.location.hostname !== 'localhost' && 
+                              window.location.hostname !== '127.0.0.1';
+            
+            if (isProduction) {
+                // В продакшене используем Railway API
+                // Установите ваш Railway URL в переменных окружения Vercel
+                // Или установите здесь напрямую:
+                // window.RAILWAY_API_URL = 'https://ваш-railway-url.railway.app';
+                window.API_MODE = 'api';
+            }
+        })();
+    </script>
+    
     <script src="js/users.js"></script>
     <script src="js/roles.js"></script>
     <script>
@@ -167,8 +185,8 @@
                               window.location.hostname !== 'localhost' && 
                               window.location.hostname !== '127.0.0.1';
             
-            // Инициализация Firebase
-            if (typeof initFirebase !== 'undefined') {
+            // Инициализация Firebase (только если используется Firebase режим)
+            if (typeof initFirebase !== 'undefined' && window.API_MODE === 'firebase') {
                 document.addEventListener('DOMContentLoaded', function() {
                     if (initFirebase()) {
                         // В продакшене переключить на Firebase режим
@@ -194,15 +212,15 @@
                                     logError('Ошибка инициализации Firebase', e);
                                 }
                             }
-                        } else {
-                            // Локально загрузить пользователей
-                            console.log('Локальный режим, загрузка пользователей из localStorage...');
-                            if (typeof initUsersStorage !== 'undefined') {
-                                initUsersStorage();
-                            }
                         }
                     }
                 });
+            } else if (!isProduction) {
+                // Локально загрузить пользователей
+                console.log('Локальный режим, загрузка пользователей из localStorage...');
+                if (typeof initUsersStorage !== 'undefined') {
+                    initUsersStorage();
+                }
             }
         })();
         
