@@ -311,6 +311,45 @@
             }
         });
         
+        // Функция ожидания загрузки функции register
+        function waitForRegister(callback, maxAttempts) {
+            maxAttempts = maxAttempts || 20; // Максимум 20 попыток (10 секунд)
+            var attempts = 0;
+            
+            function checkRegister() {
+                attempts++;
+                
+                // Проверить, загружена ли функция register
+                if (typeof register !== 'undefined' && typeof window.register !== 'undefined') {
+                    callback(true);
+                    return;
+                }
+                
+                // Если не загружена и есть попытки
+                if (attempts < maxAttempts) {
+                    // Подождать и проверить снова
+                    setTimeout(checkRegister, 500);
+                } else {
+                    // Превышено количество попыток
+                    callback(false);
+                }
+            }
+            
+            checkRegister();
+        }
+        
+        // Функция попытки регистрации
+        function tryRegister(name, email, password, phone) {
+            if (typeof register === 'undefined' && typeof window.register !== 'undefined') {
+                // Использовать window.register
+                return window.register(name, email, password, phone);
+            } else if (typeof register !== 'undefined') {
+                return register(name, email, password, phone);
+            } else {
+                return Promise.resolve(null);
+            }
+        }
+        
         // Обработка формы регистрации
         var registerForm = document.getElementById('register-form');
         var registerError = document.getElementById('register-error');
@@ -352,31 +391,63 @@
             registerBtn.disabled = true;
             registerBtn.textContent = 'Yuklanmoqda...';
             
-            // Регистрация
-            if (typeof register === 'undefined') {
-                registerError.textContent = 'Xatolik: register funksiyasi topilmadi';
-                registerError.style.display = 'block';
-                registerBtn.disabled = false;
-                registerBtn.textContent = originalRegisterBtnText;
-                return;
-            }
-            
-            register(name, email, password, phone).then(function(user) {
-                if (user) {
-                    // Успешная регистрация, перенаправить на главную страницу
-                    if (typeof getRolePage !== 'undefined') {
-                        var rolePage = getRolePage(user.role);
-                        window.location.href = rolePage;
+            // Проверить, загружена ли функция register
+            if (typeof register !== 'undefined' || typeof window.register !== 'undefined') {
+                // Функция уже загружена, можно регистрироваться
+                tryRegister(name, email, password, phone).then(function(user) {
+                    if (user) {
+                        // Успешная регистрация, перенаправить на главную страницу
+                        if (typeof getRolePage !== 'undefined') {
+                            var rolePage = getRolePage(user.role);
+                            window.location.href = rolePage;
+                        } else {
+                            window.location.href = 'index.html';
+                        }
                     } else {
-                        window.location.href = 'index.html';
+                        registerError.textContent = 'Ro\'yxatdan o\'tishda xatolik yuz berdi';
+                        registerError.style.display = 'block';
+                        registerBtn.disabled = false;
+                        registerBtn.textContent = originalRegisterBtnText;
                     }
-                } else {
-                    registerError.textContent = 'Ro\'yxatdan o\'tishda xatolik yuz berdi';
+                }).catch(function(error) {
+                    registerError.textContent = 'Ro\'yxatdan o\'tishda xatolik yuz berdi: ' + (error.message || 'Noma\'lum xatolik');
                     registerError.style.display = 'block';
                     registerBtn.disabled = false;
                     registerBtn.textContent = originalRegisterBtnText;
-                }
-            });
+                });
+            } else {
+                // Ждать загрузки функции register
+                waitForRegister(function(success) {
+                    if (success) {
+                        tryRegister(name, email, password, phone).then(function(user) {
+                            if (user) {
+                                // Успешная регистрация, перенаправить на главную страницу
+                                if (typeof getRolePage !== 'undefined') {
+                                    var rolePage = getRolePage(user.role);
+                                    window.location.href = rolePage;
+                                } else {
+                                    window.location.href = 'index.html';
+                                }
+                            } else {
+                                registerError.textContent = 'Ro\'yxatdan o\'tishda xatolik yuz berdi';
+                                registerError.style.display = 'block';
+                                registerBtn.disabled = false;
+                                registerBtn.textContent = originalRegisterBtnText;
+                            }
+                        }).catch(function(error) {
+                            registerError.textContent = 'Ro\'yxatdan o\'tishda xatolik yuz berdi: ' + (error.message || 'Noma\'lum xatolik');
+                            registerError.style.display = 'block';
+                            registerBtn.disabled = false;
+                            registerBtn.textContent = originalRegisterBtnText;
+                        });
+                    } else {
+                        registerError.textContent = 'Xatolik: register funksiyasi yuklanmadi. Iltimos, sahifani yangilang.';
+                        registerError.style.display = 'block';
+                        registerBtn.disabled = false;
+                        registerBtn.textContent = originalRegisterBtnText;
+                    }
+                });
+            }
         });
         
         // Функции переключения между формами
@@ -397,6 +468,13 @@
         // Сделать функции глобальными
         window.switchToLogin = switchToLogin;
         window.switchToRegister = switchToRegister;
+        
+        // Инициализировать формы после загрузки DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initForms);
+        } else {
+            initForms();
+        }
     </script>
 </body>
 </html>
