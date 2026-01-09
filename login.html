@@ -201,14 +201,21 @@
             }
         })();
         
-        // Обработка формы входа
-        var loginForm = document.getElementById('login-form');
-        var loginError = document.getElementById('login-error');
-        var loginBtn = loginForm.querySelector('.login-btn');
-        var originalBtnText = loginBtn.textContent;
+        // Инициализация обработчиков форм после загрузки DOM
+        function initForms() {
+            // Обработка формы входа
+            var loginForm = document.getElementById('login-form');
+            var loginError = document.getElementById('login-error');
+            if (!loginForm || !loginError) {
+                // Элементы еще не загружены, попробовать позже
+                setTimeout(initForms, 100);
+                return;
+            }
+            var loginBtn = loginForm.querySelector('.login-btn');
+            var originalBtnText = loginBtn.textContent;
 
-        // Функция ожидания загрузки пользователей
-        function waitForUsers(callback, maxAttempts) {
+            // Функция ожидания загрузки пользователей
+            function waitForUsers(callback, maxAttempts) {
             maxAttempts = maxAttempts || 20; // Максимум 20 попыток (10 секунд)
             var attempts = 0;
             
@@ -238,11 +245,11 @@
                 }
             }
             
-            checkUsers();
-        }
-        
-        // Функция попытки входа
-        function tryLogin(loginValue, password) {
+                checkUsers();
+            }
+            
+            // Функция попытки входа
+            function tryLogin(loginValue, password) {
             if (typeof login === 'undefined') {
                 loginError.textContent = 'Xatolik: login funksiyasi topilmadi';
                 loginError.style.display = 'block';
@@ -268,11 +275,11 @@
                 loginError.textContent = 'Noto\'g\'ri login yoki parol';
                 loginError.style.display = 'block';
                 loginBtn.disabled = false;
-                loginBtn.textContent = originalBtnText;
+                    loginBtn.textContent = originalBtnText;
+                }
             }
-        }
 
-        loginForm.addEventListener('submit', function(event) {
+            loginForm.addEventListener('submit', function(event) {
             event.preventDefault();
 
             var loginValue = document.getElementById('login-input').value.trim();
@@ -309,10 +316,10 @@
                     }
                 });
             }
-        });
-        
-        // Функция ожидания загрузки функции register
-        function waitForRegister(callback, maxAttempts) {
+            });
+            
+            // Функция ожидания загрузки функции register
+            function waitForRegister(callback, maxAttempts) {
             maxAttempts = maxAttempts || 20; // Максимум 20 попыток (10 секунд)
             var attempts = 0;
             
@@ -335,26 +342,31 @@
                 }
             }
             
-            checkRegister();
-        }
-        
-        // Функция попытки регистрации
-        function tryRegister(name, email, password, phone) {
+                checkRegister();
+            }
+            
+            // Функция попытки регистрации
+            function tryRegister(name, email, password, phone) {
             if (typeof register === 'undefined' && typeof window.register !== 'undefined') {
                 // Использовать window.register
                 return window.register(name, email, password, phone);
             } else if (typeof register !== 'undefined') {
                 return register(name, email, password, phone);
             } else {
-                return Promise.resolve(null);
+                    return Promise.resolve(null);
+                }
             }
-        }
-        
-        // Обработка формы регистрации
-        var registerForm = document.getElementById('register-form');
-        var registerError = document.getElementById('register-error');
-        var registerBtn = registerForm.querySelector('.login-btn');
-        var originalRegisterBtnText = registerBtn.textContent;
+            
+            // Обработка формы регистрации
+            var registerForm = document.getElementById('register-form');
+            var registerError = document.getElementById('register-error');
+            if (!registerForm || !registerError) {
+                // Элементы еще не загружены, попробовать позже
+                setTimeout(initForms, 100);
+                return;
+            }
+            var registerBtn = registerForm.querySelector('.login-btn');
+            var originalRegisterBtnText = registerBtn.textContent;
         
         registerForm.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -449,6 +461,14 @@
                 });
             }
         });
+        }
+        
+        // Инициализировать формы после загрузки DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initForms);
+        } else {
+            initForms();
+        }
         
         // Функции переключения между формами
         function switchToLogin() {
@@ -468,13 +488,6 @@
         // Сделать функции глобальными
         window.switchToLogin = switchToLogin;
         window.switchToRegister = switchToRegister;
-        
-        // Инициализировать формы после загрузки DOM
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initForms);
-        } else {
-            initForms();
-        }
     </script>
 </body>
 </html>
