@@ -263,15 +263,42 @@ function register(name, email, password, phone) {
     
     if (typeof API_MODE !== 'undefined' && API_MODE === 'firebase') {
         // Регистрация через Firebase Auth
-        if (typeof getAuth === 'undefined' || !isFirebaseInitialized()) {
-            if (typeof logError !== 'undefined') {
-                logError('Firebase Auth не инициализирован');
+        console.log('Регистрация через Firebase, проверка инициализации...');
+        
+        // Проверить, что Firebase SDK загружен
+        if (typeof firebase === 'undefined') {
+            console.error('Firebase SDK не загружен');
+            return Promise.reject(new Error('Firebase SDK не загружен'));
+        }
+        
+        // Попытаться инициализировать Firebase, если не инициализирован
+        if (typeof isFirebaseInitialized === 'undefined' || !isFirebaseInitialized()) {
+            console.log('Firebase не инициализирован, пытаемся инициализировать...');
+            if (typeof initFirebase !== 'undefined') {
+                if (!initFirebase()) {
+                    console.error('Не удалось инициализировать Firebase');
+                    return Promise.reject(new Error('Не удалось инициализировать Firebase'));
+                }
+            } else {
+                console.error('initFirebase не определена');
+                return Promise.reject(new Error('initFirebase не определена'));
             }
-            return Promise.resolve(null);
+        }
+        
+        if (typeof getAuth === 'undefined' || typeof getFirestore === 'undefined') {
+            console.error('getAuth или getFirestore не определены');
+            return Promise.reject(new Error('Firebase функции не определены'));
         }
         
         var auth = getAuth();
         var db = getFirestore();
+        
+        if (!auth || !db) {
+            console.error('Firebase Auth или Firestore не доступны', { auth: auth, db: db });
+            return Promise.reject(new Error('Firebase сервисы не доступны'));
+        }
+        
+        console.log('Создание пользователя в Firebase Auth...');
         
         return auth.createUserWithEmailAndPassword(email, password)
             .then(function(userCredential) {
@@ -283,7 +310,9 @@ function register(name, email, password, phone) {
                     email: email,
                     role: userRoles.CUSTOMER, // По умолчанию обычный пользователь
                     phone: phone || '',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp ? 
+                        firebase.firestore.FieldValue.serverTimestamp() : 
+                        new Date()
                 };
                 
                 return db.collection('users').doc(user.uid).set(userData)
@@ -303,10 +332,12 @@ function register(name, email, password, phone) {
                     });
             })
             .catch(function(error) {
+                console.error('Ошибка регистрации через Firebase Auth:', error);
                 if (typeof logError !== 'undefined') {
                     logError('Ошибка регистрации через Firebase Auth', error);
                 }
-                return null;
+                // Возвращаем объект с ошибкой для обработки
+                return Promise.reject(error);
             });
     } else {
         // Регистрация через localStorage

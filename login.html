@@ -174,7 +174,10 @@
                         // В продакшене переключить на Firebase режим
                         if (isProduction && typeof setAPIMode !== 'undefined') {
                             try {
+                                console.log('Переключение на Firebase режим...');
                                 setAPIMode('firebase');
+                                console.log('API_MODE установлен в:', typeof API_MODE !== 'undefined' ? API_MODE : 'не определен');
+                                
                                 // Загрузить пользователей из Firebase
                                 if (typeof loadUsersFromFirebase !== 'undefined') {
                                     setTimeout(function() {
@@ -186,12 +189,14 @@
                                     }, 500);
                                 }
                             } catch (e) {
+                                console.error('Ошибка инициализации Firebase:', e);
                                 if (typeof logError !== 'undefined') {
                                     logError('Ошибка инициализации Firebase', e);
                                 }
                             }
                         } else {
                             // Локально загрузить пользователей
+                            console.log('Локальный режим, загрузка пользователей из localStorage...');
                             if (typeof initUsersStorage !== 'undefined') {
                                 initUsersStorage();
                             }
@@ -422,7 +427,32 @@
                         registerBtn.textContent = originalRegisterBtnText;
                     }
                 }).catch(function(error) {
-                    registerError.textContent = 'Ro\'yxatdan o\'tishda xatolik yuz berdi: ' + (error.message || 'Noma\'lum xatolik');
+                    console.error('Ошибка регистрации:', error);
+                    var errorMessage = 'Ro\'yxatdan o\'tishda xatolik yuz berdi';
+                    
+                    // Более детальные сообщения об ошибках
+                    if (error && error.code) {
+                        switch(error.code) {
+                            case 'auth/email-already-in-use':
+                                errorMessage = 'Bu email allaqachon ishlatilgan';
+                                break;
+                            case 'auth/invalid-email':
+                                errorMessage = 'Noto\'g\'ri email formati';
+                                break;
+                            case 'auth/weak-password':
+                                errorMessage = 'Parol juda zaif. Kamida 6 belgi bo\'lishi kerak';
+                                break;
+                            case 'auth/network-request-failed':
+                                errorMessage = 'Internet aloqasi yo\'q. Iltimos, internetni tekshiring';
+                                break;
+                            default:
+                                errorMessage = 'Xatolik: ' + (error.message || error.code || 'Noma\'lum xatolik');
+                        }
+                    } else if (error && error.message) {
+                        errorMessage = 'Xatolik: ' + error.message;
+                    }
+                    
+                    registerError.textContent = errorMessage;
                     registerError.style.display = 'block';
                     registerBtn.disabled = false;
                     registerBtn.textContent = originalRegisterBtnText;
@@ -447,7 +477,32 @@
                                 registerBtn.textContent = originalRegisterBtnText;
                             }
                         }).catch(function(error) {
-                            registerError.textContent = 'Ro\'yxatdan o\'tishda xatolik yuz berdi: ' + (error.message || 'Noma\'lum xatolik');
+                            console.error('Ошибка регистрации:', error);
+                            var errorMessage = 'Ro\'yxatdan o\'tishda xatolik yuz berdi';
+                            
+                            // Более детальные сообщения об ошибках
+                            if (error && error.code) {
+                                switch(error.code) {
+                                    case 'auth/email-already-in-use':
+                                        errorMessage = 'Bu email allaqachon ishlatilgan';
+                                        break;
+                                    case 'auth/invalid-email':
+                                        errorMessage = 'Noto\'g\'ri email formati';
+                                        break;
+                                    case 'auth/weak-password':
+                                        errorMessage = 'Parol juda zaif. Kamida 6 belgi bo\'lishi kerak';
+                                        break;
+                                    case 'auth/network-request-failed':
+                                        errorMessage = 'Internet aloqasi yo\'q. Iltimos, internetni tekshiring';
+                                        break;
+                                    default:
+                                        errorMessage = 'Xatolik: ' + (error.message || error.code || 'Noma\'lum xatolik');
+                                }
+                            } else if (error && error.message) {
+                                errorMessage = 'Xatolik: ' + error.message;
+                            }
+                            
+                            registerError.textContent = errorMessage;
                             registerError.style.display = 'block';
                             registerBtn.disabled = false;
                             registerBtn.textContent = originalRegisterBtnText;
