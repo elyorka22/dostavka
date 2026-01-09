@@ -261,6 +261,53 @@ function register(name, email, password, phone) {
         return Promise.resolve(null);
     }
     
+    // Регистрация через Railway API
+    if (typeof API_MODE !== 'undefined' && API_MODE === 'api') {
+        console.log('Регистрация через Railway API...');
+        
+        if (typeof API_BASE_URL === 'undefined') {
+            console.error('API_BASE_URL не определен');
+            return Promise.reject(new Error('API_BASE_URL не определен'));
+        }
+        
+        return fetch(API_BASE_URL + '/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, email, password, phone: phone || null })
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                // Сохранить токен
+                if (data.token) {
+                    localStorage.setItem('authToken', data.token);
+                }
+                // Сохранить пользователя
+                var currentUser = {
+                    id: data.user.id,
+                    login: data.user.email,
+                    name: data.user.name,
+                    role: data.user.role || userRoles.CUSTOMER,
+                    email: data.user.email,
+                    phone: data.user.phone || ''
+                };
+                usersStorage.currentUser = currentUser;
+                saveCurrentUser();
+                return currentUser;
+            } else {
+                throw new Error(data.error || 'Ошибка регистрации');
+            }
+        })
+        .catch(function(error) {
+            console.error('Ошибка регистрации через API:', error);
+            return Promise.reject(error);
+        });
+    }
+    
     if (typeof API_MODE !== 'undefined' && API_MODE === 'firebase') {
         // Регистрация через Firebase Auth
         console.log('Регистрация через Firebase, проверка инициализации...');

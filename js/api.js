@@ -2,8 +2,11 @@
 // Простая реализация без использования сложных техник
 // Поддерживает: localStorage, Firebase, HTTP API
 
-// Базовый URL API (для будущего использования)
-var API_BASE_URL = 'http://localhost:3000/api'; // Замените на реальный URL
+// Базовый URL API (для Railway)
+// Установите ваш Railway URL в переменных окружения Vercel или здесь
+var API_BASE_URL = process.env.RAILWAY_API_URL || 
+                   window.RAILWAY_API_URL || 
+                   'http://localhost:3000/api'; // Замените на ваш Railway URL
 
 // Режим работы: 'localStorage', 'firebase' или 'api'
 // Проверяем переменную окружения или используем localStorage по умолчанию
