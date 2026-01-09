@@ -415,6 +415,18 @@ function getRolePage(role) {
     return rolePages[role] || 'index.html';
 }
 
+// Экспорт функций для глобального доступа
+if (typeof window !== 'undefined') {
+    window.register = register;
+    window.login = login;
+    window.logout = logout;
+    window.getCurrentUser = getCurrentUser;
+    window.isAuthenticated = isAuthenticated;
+    window.hasRole = hasRole;
+    window.isAdmin = isAdmin;
+    window.getRolePage = getRolePage;
+}
+
 // Инициализация при загрузке
 initUsersStorage();
 
