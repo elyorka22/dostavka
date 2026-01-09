@@ -341,6 +341,15 @@ var UsersAPI = {
         }
         return null;
     },
+    create: function(userData) {
+        return apiRequest('POST', '/api/users', userData);
+    },
+    update: function(id, userData) {
+        return apiRequest('PUT', '/api/users/' + id, userData);
+    },
+    delete: function(id) {
+        return apiRequest('DELETE', '/api/users/' + id);
+    },
     login: function(credentials) {
         return apiRequest('POST', '/api/auth/login', credentials);
     },

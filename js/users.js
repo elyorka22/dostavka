@@ -234,10 +234,150 @@ function login(loginValue, password) {
     return null;
 }
 
+// Регистрация нового пользователя
+function register(name, email, password, phone) {
+    // Валидация
+    if (!name || !email || !password) {
+        if (typeof logError !== 'undefined') {
+            logError('Имя, email и пароль обязательны');
+        }
+        return Promise.resolve(null);
+    }
+    
+    // Проверка формата email
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        if (typeof logError !== 'undefined') {
+            logError('Неверный формат email');
+        }
+        return Promise.resolve(null);
+    }
+    
+    // Проверка длины пароля
+    if (password.length < 6) {
+        if (typeof logError !== 'undefined') {
+            logError('Пароль должен содержать минимум 6 символов');
+        }
+        return Promise.resolve(null);
+    }
+    
+    if (typeof API_MODE !== 'undefined' && API_MODE === 'firebase') {
+        // Регистрация через Firebase Auth
+        if (typeof getAuth === 'undefined' || !isFirebaseInitialized()) {
+            if (typeof logError !== 'undefined') {
+                logError('Firebase Auth не инициализирован');
+            }
+            return Promise.resolve(null);
+        }
+        
+        var auth = getAuth();
+        var db = getFirestore();
+        
+        return auth.createUserWithEmailAndPassword(email, password)
+            .then(function(userCredential) {
+                var user = userCredential.user;
+                
+                // Создать документ пользователя в Firestore
+                var userData = {
+                    name: name,
+                    email: email,
+                    role: userRoles.CUSTOMER, // По умолчанию обычный пользователь
+                    phone: phone || '',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                return db.collection('users').doc(user.uid).set(userData)
+                    .then(function() {
+                        // Автоматически войти после регистрации
+                        var currentUser = {
+                            id: user.uid,
+                            login: email,
+                            name: name,
+                            role: userRoles.CUSTOMER,
+                            email: email,
+                            phone: phone || ''
+                        };
+                        usersStorage.currentUser = currentUser;
+                        saveCurrentUser();
+                        return currentUser;
+                    });
+            })
+            .catch(function(error) {
+                if (typeof logError !== 'undefined') {
+                    logError('Ошибка регистрации через Firebase Auth', error);
+                }
+                return null;
+            });
+    } else {
+        // Регистрация через localStorage
+        // Проверить, не существует ли уже пользователь с таким email
+        for (var i = 0; i < usersStorage.users.length; i++) {
+            if (usersStorage.users[i].email === email || usersStorage.users[i].login === email) {
+                if (typeof logError !== 'undefined') {
+                    logError('Пользователь с таким email уже существует');
+                }
+                return Promise.resolve(null);
+            }
+        }
+        
+        // Создать нового пользователя
+        var newUserId = usersStorage.users.length > 0 ? 
+            Math.max.apply(null, usersStorage.users.map(function(u) { return u.id; })) + 1 : 1;
+        
+        var newUser = {
+            id: newUserId,
+            login: email,
+            password: password,
+            name: name,
+            role: userRoles.CUSTOMER,
+            email: email,
+            phone: phone || ''
+        };
+        
+        usersStorage.users.push(newUser);
+        saveUsers();
+        
+        // Автоматически войти после регистрации
+        var currentUser = {
+            id: newUser.id,
+            login: newUser.login,
+            name: newUser.name,
+            role: newUser.role,
+            email: newUser.email,
+            phone: newUser.phone
+        };
+        usersStorage.currentUser = currentUser;
+        saveCurrentUser();
+        
+        return Promise.resolve(currentUser);
+    }
+}
+
 // Выход из системы
 function logout() {
-    usersStorage.currentUser = null;
-    saveCurrentUser();
+    if (typeof API_MODE !== 'undefined' && API_MODE === 'firebase') {
+        if (typeof getAuth === 'undefined' || !isFirebaseInitialized()) {
+            if (typeof logError !== 'undefined') {
+                logError('Firebase Auth не инициализирован');
+            }
+            return;
+        }
+        var auth = getAuth();
+        auth.signOut().then(function() {
+            usersStorage.currentUser = null;
+            saveCurrentUser();
+            if (typeof logInfo !== 'undefined') {
+                logInfo('Пользователь вышел из системы Firebase');
+            }
+        }).catch(function(error) {
+            if (typeof logError !== 'undefined') {
+                logError('Ошибка выхода из системы Firebase', error);
+            }
+        });
+    } else {
+        usersStorage.currentUser = null;
+        saveCurrentUser();
+    }
 }
 
 // Получение текущего пользователя

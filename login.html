@@ -12,38 +12,120 @@
 <body class="login-page">
     <div class="login-container">
         <div class="login-card">
-            <h1 class="login-title">Tizimga kirish</h1>
-            <p class="login-subtitle">Login va parolni kiriting</p>
+            <!-- Переключатель между входом и регистрацией -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="login-tab" onclick="switchToLogin()">Kirish</button>
+                <button class="auth-tab" id="register-tab" onclick="switchToRegister()">Ro'yxatdan o'tish</button>
+            </div>
             
-            <form class="login-form" id="login-form">
-                <div class="form-group">
-                    <label for="login-input" class="form-label">Login</label>
-                    <input 
-                        type="text" 
-                        id="login-input" 
-                        class="form-input" 
-                        placeholder="Loginni kiriting" 
-                        required
-                        autocomplete="username"
-                    >
-                </div>
+            <!-- Форма входа -->
+            <div class="auth-form" id="login-form-container">
+                <h1 class="login-title">Tizimga kirish</h1>
+                <p class="login-subtitle">Login va parolni kiriting</p>
+                
+                <form class="login-form" id="login-form">
+                    <div class="form-group">
+                        <label for="login-input" class="form-label">Login yoki Email</label>
+                        <input 
+                            type="text" 
+                            id="login-input" 
+                            class="form-input" 
+                            placeholder="Loginni kiriting" 
+                            required
+                            autocomplete="username"
+                        >
+                    </div>
 
-                <div class="form-group">
-                    <label for="password-input" class="form-label">Parol</label>
-                    <input 
-                        type="password" 
-                        id="password-input" 
-                        class="form-input" 
-                        placeholder="Parolni kiriting" 
-                        required
-                        autocomplete="current-password"
-                    >
-                </div>
+                    <div class="form-group">
+                        <label for="password-input" class="form-label">Parol</label>
+                        <input 
+                            type="password" 
+                            id="password-input" 
+                            class="form-input" 
+                            placeholder="Parolni kiriting" 
+                            required
+                            autocomplete="current-password"
+                        >
+                    </div>
 
-                <div class="form-error" id="login-error"></div>
+                    <div class="form-error" id="login-error"></div>
 
-                <button type="submit" class="login-btn">Kirish</button>
-            </form>
+                    <button type="submit" class="login-btn">Kirish</button>
+                </form>
+            </div>
+            
+            <!-- Форма регистрации -->
+            <div class="auth-form" id="register-form-container" style="display: none;">
+                <h1 class="login-title">Ro'yxatdan o'tish</h1>
+                <p class="login-subtitle">Yangi akkaunt yarating</p>
+                
+                <form class="login-form" id="register-form">
+                    <div class="form-group">
+                        <label for="register-name" class="form-label">Ism</label>
+                        <input 
+                            type="text" 
+                            id="register-name" 
+                            class="form-input" 
+                            placeholder="Ismingizni kiriting" 
+                            required
+                            autocomplete="name"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-email" class="form-label">Email</label>
+                        <input 
+                            type="email" 
+                            id="register-email" 
+                            class="form-input" 
+                            placeholder="Email manzilingizni kiriting" 
+                            required
+                            autocomplete="email"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-phone" class="form-label">Telefon raqami</label>
+                        <input 
+                            type="tel" 
+                            id="register-phone" 
+                            class="form-input" 
+                            placeholder="+998901234567" 
+                            autocomplete="tel"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password" class="form-label">Parol</label>
+                        <input 
+                            type="password" 
+                            id="register-password" 
+                            class="form-input" 
+                            placeholder="Parolni kiriting (min. 6 belgi)" 
+                            required
+                            autocomplete="new-password"
+                            minlength="6"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password-confirm" class="form-label">Parolni tasdiqlash</label>
+                        <input 
+                            type="password" 
+                            id="register-password-confirm" 
+                            class="form-input" 
+                            placeholder="Parolni qayta kiriting" 
+                            required
+                            autocomplete="new-password"
+                            minlength="6"
+                        >
+                    </div>
+
+                    <div class="form-error" id="register-error"></div>
+
+                    <button type="submit" class="login-btn">Ro'yxatdan o'tish</button>
+                </form>
+            </div>
 
             <div class="login-info">
                 <p class="login-info__title">Test akkauntlar:</p>
@@ -228,6 +310,93 @@
                 });
             }
         });
+        
+        // Обработка формы регистрации
+        var registerForm = document.getElementById('register-form');
+        var registerError = document.getElementById('register-error');
+        var registerBtn = registerForm.querySelector('.login-btn');
+        var originalRegisterBtnText = registerBtn.textContent;
+        
+        registerForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            var name = document.getElementById('register-name').value.trim();
+            var email = document.getElementById('register-email').value.trim();
+            var phone = document.getElementById('register-phone').value.trim();
+            var password = document.getElementById('register-password').value;
+            var passwordConfirm = document.getElementById('register-password-confirm').value;
+            
+            // Валидация
+            registerError.textContent = '';
+            registerError.style.display = 'none';
+            
+            if (!name || !email || !password) {
+                registerError.textContent = 'Iltimos, barcha maydonlarni to\'ldiring';
+                registerError.style.display = 'block';
+                return;
+            }
+            
+            if (password.length < 6) {
+                registerError.textContent = 'Parol kamida 6 belgidan iborat bo\'lishi kerak';
+                registerError.style.display = 'block';
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                registerError.textContent = 'Parollar mos kelmaydi';
+                registerError.style.display = 'block';
+                return;
+            }
+            
+            // Показать индикатор загрузки
+            registerBtn.disabled = true;
+            registerBtn.textContent = 'Yuklanmoqda...';
+            
+            // Регистрация
+            if (typeof register === 'undefined') {
+                registerError.textContent = 'Xatolik: register funksiyasi topilmadi';
+                registerError.style.display = 'block';
+                registerBtn.disabled = false;
+                registerBtn.textContent = originalRegisterBtnText;
+                return;
+            }
+            
+            register(name, email, password, phone).then(function(user) {
+                if (user) {
+                    // Успешная регистрация, перенаправить на главную страницу
+                    if (typeof getRolePage !== 'undefined') {
+                        var rolePage = getRolePage(user.role);
+                        window.location.href = rolePage;
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                } else {
+                    registerError.textContent = 'Ro\'yxatdan o\'tishda xatolik yuz berdi';
+                    registerError.style.display = 'block';
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = originalRegisterBtnText;
+                }
+            });
+        });
+        
+        // Функции переключения между формами
+        function switchToLogin() {
+            document.getElementById('login-form-container').style.display = 'block';
+            document.getElementById('register-form-container').style.display = 'none';
+            document.getElementById('login-tab').classList.add('active');
+            document.getElementById('register-tab').classList.remove('active');
+        }
+        
+        function switchToRegister() {
+            document.getElementById('login-form-container').style.display = 'none';
+            document.getElementById('register-form-container').style.display = 'block';
+            document.getElementById('login-tab').classList.remove('active');
+            document.getElementById('register-tab').classList.add('active');
+        }
+        
+        // Сделать функции глобальными
+        window.switchToLogin = switchToLogin;
+        window.switchToRegister = switchToRegister;
     </script>
 </body>
 </html>
